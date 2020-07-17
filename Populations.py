@@ -1,5 +1,6 @@
 import pygame
 import Dot
+import main
 from heapq import nlargest
 import random
 import Obstactles
@@ -13,6 +14,8 @@ class Population(pygame.sprite.Group):
         self.dots_fitness = {}
         self.goal_count = 0
         self.fastest_dot = 0
+        self.goal_loc = main.goal_loc # attribute to hold the location
+                            # of the goal in order to update each dots proximity to it
         self.obstactles = {}
 
 
@@ -21,12 +24,16 @@ class Population(pygame.sprite.Group):
             self.add(dot)
             self.dots_fitness[dot] = 0
 
-    def update(self, count: int, gen: int):
+    def update(self, count: int, gen: int, goal: any):
+        # added the goal parameter to check whether a dot has encountered a goal zone
+
+        for g in goal.spritedict:
+            self.goal_loc = g.loc
         for dot in self.spritedict:
             if dot.reachedgoal or not dot.alive:
                 continue
             else:
-                dot.update(count, gen)
+                dot.update(count, gen, self.goal_loc)
             if dot.reachedgoal:
                 if self.goal_count == 0:
                     self.fastest_dot = dot
@@ -74,7 +81,7 @@ class Population(pygame.sprite.Group):
             baby = Dot.Dot(self.screen)
 
             # create babies from the best dots and mutate babies at random
-            mutation_rate = 0.05
+            mutation_rate = 0.09
             for move in parent1.memory:
 
                 mutation_mod = random.uniform(0, 1)

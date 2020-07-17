@@ -1,5 +1,7 @@
 import pygame
 import random
+import main
+import math
 import Obstactles
 
 black = (0, 0, 0)
@@ -23,9 +25,10 @@ class Dot(pygame.sprite.DirtySprite):
     def fitness(self):
         if not self.reachedgoal:
 
-            distancetogoal = (self.rect.centerx - 325)**2 + \
-                             (self.rect.centery - 100)**2
-            fitness = 1.0 / (distancetogoal) ** 2
+            distancetogoal = (self.rect.centerx - main.goal_loc[0])**2 + \
+                             (self.rect.centery - main.goal_loc[1])**2
+            fitness = 1.0 / ( (distancetogoal**2) ** 2 * (len(self.memory)**2))
+
 
         else:
             # if this dot has reached the goal, then it should have a higher
@@ -46,12 +49,15 @@ class Dot(pygame.sprite.DirtySprite):
         self.image.fill((250, 0, 0))
         self.alive = False
 
-    def update(self, count: int, gen: int):
+    def update(self, count: int, gen: int, goal_loc: tuple):
+        goalx = goal_loc[0]
+        goaly = goal_loc[1]
+
         self.dirty = True
         canvas_rect = pygame.Rect((0, 0), (650, 650))
         screen_rect = pygame.Rect((1, 1), (648, 648))
 
-        dir = random.randint(0, 3)
+        dxy = random.randint(0, 3)
 
         # if the dot has reached the goal, it must be killed
         if not self.reachedgoal and self.alive:
@@ -62,15 +68,15 @@ class Dot(pygame.sprite.DirtySprite):
                 self.rect.clamp_ip(canvas_rect)
             else:
 
-                if dir == 0:
+                if dxy == 0:
                     self.rect.move_ip(self.acc * 2, 0)
                     self.rect.clamp_ip(canvas_rect)
                     self.memory.append((2, 0))
-                elif dir == 1:
+                elif dxy == 1:
                     self.rect.move_ip(self.acc * -2, 0)
                     self.rect.clamp_ip(canvas_rect)
                     self.memory.append((-2, 0))
-                elif dir == 2:
+                elif dxy == 2:
                     self.rect.move_ip(0, self.acc * 2)
                     self.rect.clamp_ip(canvas_rect)
                     self.memory.append((0, 2))
@@ -91,7 +97,7 @@ class Dot(pygame.sprite.DirtySprite):
 
 
             # check if dot has reached the goal
-            goal_rect = pygame.Rect((325, 100), (20, 20))
+            goal_rect = pygame.Rect((goalx, goaly), (20, 20))
             if self.rect.colliderect(goal_rect):
                 self.image.fill((0, 250, 250))
                 self.reachedgoal = True

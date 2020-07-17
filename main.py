@@ -9,13 +9,15 @@ import Populations
 
 # constants
 size = width, height = 650, 650
+goal_loc = (100, 10) # 325, 10
 black = 0,0,0
 white = 250,250,250
 
 
+
 # Event loop
 def main(dots: Populations.Population, obstacles,
-         screen: pygame.Rect):
+         screen: pygame.Rect, goal):
     paused = False
     gen = 0
     count = 0
@@ -27,12 +29,14 @@ def main(dots: Populations.Population, obstacles,
     resizing = False
     resizing_obs = []
     resizing_corner = (0,0)
+    goal_in_motion = False
     while 1:
 
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
                 sys.exit()
+
 
             elif event.type == pygame.KEYDOWN:
                 #pause the game if the spacebar is pressed.
@@ -56,7 +60,17 @@ def main(dots: Populations.Population, obstacles,
                         dragging_obs[0].rect.center = event.pos
                         dragging_obs[0].image.fill((250, 100, 0))
                         dragging = False
+
+                        if goal_in_motion:
+                            # dots.goal_loc = dragging_obs[0].rect.topleft
+                            for g in goal.spritedict:
+                                g.loc = dragging_obs[0].rect.topleft
+                            # main.goalx = dots.goal_loc[0]
+                            # main.goaly = dots.goal_loc[1]
+                            goal_in_motion = False
+
                         dragging_obs.clear()
+
                 else:
                     dragging_obs[0].rect.center = pygame.mouse.get_pos()
 
@@ -106,6 +120,21 @@ def main(dots: Populations.Population, obstacles,
                         # check if any obstacle has been clicked on, and if so,
                         # change its color to indicate active movement as well
                         # as change the dragging constant and dragging list.
+                        for gb in goal.spritedict.keys():
+                            if gb.rect.collidepoint(event.pos):
+                                if event.button == 1:
+                                    #gb.image.fill((250, 150, 0))
+                                    dragging_obs.append(gb)
+                                    dragging = True
+                                    goal_in_motion = True
+                                # if right mouse click, resize obstacle
+                                if event.button == 3:
+                                    gb.image.fill((250, 80, 0))
+                                    resizing_obs.append(gb)
+                                    resizing = True
+                                    og_pos = gb.rect.topleft
+                                    og_size = gb.rect.size
+
                         for ob in obstacles.spritedict.keys():
                             if ob.rect.collidepoint(event.pos):
                                 # if left mouse click, then we want to drag
@@ -124,7 +153,9 @@ def main(dots: Populations.Population, obstacles,
 
         screen.fill(white)
         # Initialize goal and text overlay
-        pygame.draw.rect(screen, (0, 250, 0), (325, 100, 20, 20))
+        # pygame.draw.rect(screen, (0, 250, 0), (goalx, goaly, 20, 20))
+
+
         text_surface1 = font.render('Gen: ' + str(gen), True, black)
         text_surface2 = font.render('Best Step Count: ' + str(best_step_count), True, black)
         screen.blit(text_surface1, (500, 5))
@@ -134,22 +165,28 @@ def main(dots: Populations.Population, obstacles,
         for dead_dots in pygame.sprite.groupcollide(obstacles,dots,
                                                     dokilla=False,
                                                     dokillb=False).values():
-            [dot.kill() for dot in dead_dots]
+            for dot in dead_dots:
+                dot.kill()
 
         if paused:
-
+            goal.draw(screen)
             obstacles.draw(screen)
+
             dots.draw(screen)
+
             pygame.display.update()
             clock.tick(fps)
             obstacles.update()
+            goal.update()
         else:
-
+            goal.draw(screen)
             dots.draw(screen)
             obstacles.draw(screen)
+
             pygame.display.update()
             clock.tick(fps)
-            dots.update(count, gen)
+            goal.update()
+            dots.update(count, gen, goal)
             obstacles.update()
             count += 1
 
@@ -194,6 +231,9 @@ if __name__ == '__main__':
     background = background.convert()
     background.fill(white)
 
+    # Initialize Goal
+    goal = Obstactles.GoalPop(1, screen)
+
     # Initialize dots
     first_sample = Populations.Population(pop_size, screen)
 
@@ -207,4 +247,4 @@ if __name__ == '__main__':
     # Initialise clock
     clock = pygame.time.Clock()
 
-    main(first_sample, obs, screen)
+    main(first_sample, obs, screen, goal)
