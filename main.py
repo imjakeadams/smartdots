@@ -57,10 +57,6 @@ def main(dots: Populations.Population, obstacles,
             if dragging:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
-                        dragging_obs[0].rect.center = event.pos
-                        dragging_obs[0].image.fill((250, 100, 0))
-                        dragging = False
-
                         if goal_in_motion:
                             # dots.goal_loc = dragging_obs[0].rect.topleft
                             for g in goal.spritedict:
@@ -69,10 +65,22 @@ def main(dots: Populations.Population, obstacles,
                             # main.goaly = dots.goal_loc[1]
                             goal_in_motion = False
 
+                            dragging_obs[0].rect.center = event.pos
+                            dragging = False
+                        else:
+                            for obj in dragging_obs:
+                                obj.rect.center = event.pos
+                                obj.image.fill((250, 100, 0))
+                                dragging = False
+
+
+
+
                         dragging_obs.clear()
 
                 else:
-                    dragging_obs[0].rect.center = pygame.mouse.get_pos()
+                    for obj in dragging_obs:
+                        obj.rect.center = pygame.mouse.get_pos()
 
             elif resizing:
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -128,12 +136,12 @@ def main(dots: Populations.Population, obstacles,
                                     dragging = True
                                     goal_in_motion = True
                                 # if right mouse click, resize obstacle
-                                if event.button == 3:
-                                    gb.image.fill((250, 80, 0))
-                                    resizing_obs.append(gb)
-                                    resizing = True
-                                    og_pos = gb.rect.topleft
-                                    og_size = gb.rect.size
+                                # if event.button == 3:
+                                #     gb.image.fill((250, 80, 0))
+                                #     resizing_obs.append(gb)
+                                #     resizing = True
+                                #     og_pos = gb.rect.topleft
+                                #     og_size = gb.rect.size
 
                         for ob in obstacles.spritedict.keys():
                             if ob.rect.collidepoint(event.pos):
@@ -199,7 +207,7 @@ def main(dots: Populations.Population, obstacles,
 
         #Here is where the genetic algo will run and determine the next gen
             if dots.genocide():
-                dots.calc_fitness()
+                dots.calc_fitness(goal)
                 if dots.goal_count != 0:
                     # # best_dot = nlargest(1, dots.dots_fitness.keys(), key=lambda i: dots.dots_fitness[i])[0]
                     # nbest_step_count = len(best_dot.memory)

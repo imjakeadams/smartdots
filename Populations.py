@@ -42,10 +42,11 @@ class Population(pygame.sprite.Group):
             #check if dot touches an obstactle
             # for obs in Obstactles.Obstactle
 
-    def calc_fitness(self):
-
+    def calc_fitness(self, goal: any):
+        # calculate the fitness score for each dot
+        # goal parameter provides location of goal relative to dot
         for dot in self.spritedict:
-            self.dots_fitness[dot] = dot.fitness()
+            self.dots_fitness[dot] = dot.fitness(goal)
 
     def genocide(self):
         # if all the dots are dead, then the next wave can start

@@ -22,11 +22,12 @@ class Dot(pygame.sprite.DirtySprite):
         self.reachedgoal = False
         self.fit = 0
 
-    def fitness(self):
+    def fitness(self, goal: any):
         if not self.reachedgoal:
-
-            distancetogoal = (self.rect.centerx - main.goal_loc[0])**2 + \
-                             (self.rect.centery - main.goal_loc[1])**2
+            for g in goal.spritedict:
+                gloc = g.loc
+            distancetogoal = (self.rect.centerx - gloc[0])**2 + \
+                             (self.rect.centery - gloc[1])**2
             fitness = 1.0 / ( (distancetogoal**2) ** 2 * (len(self.memory)**2))
 
 
